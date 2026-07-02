@@ -14,7 +14,8 @@ import java.util.concurrent.TimeUnit
 
 class StudentAdapter(
     private var list: List<Student>,
-    private val onDeleteClick: (Student) -> Unit
+    private val onDeleteClick: (Student) -> Unit,
+    private val onPhotoClick: (Student) -> Unit
 ) : RecyclerView.Adapter<StudentAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -38,6 +39,15 @@ class StudentAdapter(
         holder.name.text = student.name
         holder.classDept.text = student.classDepartment ?: "No Department"
 
+        if (student.profilePhoto != null) {
+            val uri = android.net.Uri.parse(student.profilePhoto)
+            holder.ivProfile.setImageURI(uri)
+            holder.ivProfile.scaleType = ImageView.ScaleType.CENTER_CROP
+        } else {
+            // Default circular avatar placeholder
+            holder.ivProfile.setImageResource(android.R.drawable.ic_menu_gallery)
+        }
+
         val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
         val birthDateCalendar = Calendar.getInstance().apply {
             timeInMillis = student.birthDate
@@ -46,7 +56,6 @@ class StudentAdapter(
         val today = Calendar.getInstance()
         var age = today.get(Calendar.YEAR) - birthDateCalendar.get(Calendar.YEAR)
         
-
         val birthMonth = birthDateCalendar.get(Calendar.MONTH)
         val birthDay = birthDateCalendar.get(Calendar.DAY_OF_MONTH)
         val currMonth = today.get(Calendar.MONTH)
@@ -66,7 +75,6 @@ class StudentAdapter(
             holder.daysRemaining.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFFEF4444.toInt())
             holder.birthdayBadge.visibility = View.VISIBLE
             
-
             val anim = AnimationUtils.loadAnimation(holder.itemView.context, android.R.anim.fade_in)
             holder.birthdayBadge.startAnimation(anim)
         } else {
@@ -77,6 +85,7 @@ class StudentAdapter(
         }
 
         holder.btnDelete.setOnClickListener { onDeleteClick(student) }
+        holder.ivProfile.setOnClickListener { onPhotoClick(student) }
     }
 
     private fun getDaysUntilNextBirthday(birthDate: Long): Long {
